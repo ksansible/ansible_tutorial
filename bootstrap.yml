@@ -1,0 +1,45 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install updates (CentOS)
+    tags: always
+    yum:      
+      update_only: yes
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: install updates (Ubuntu)
+    tags: always
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: create debra user
+    tags: always
+    user:
+      name: debra
+      groups: root
+
+  - name: add ssh key for debra
+    tags: always
+    authorized_key: 
+      user: debra
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPCF206OnQatk0oAfui6U9N3h+eZ0Q/kPI8MQCk3fpNy ansible"
+
+
+  - name: add sudoers file for debra
+    tags: always
+    copy:
+      src: sudoer_debra
+      dest: /etc/sudoers.d/debra
+      owner: root
+      group: root
+      mode: 0440
